@@ -1,0 +1,704 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Markdown Knowledge Graph</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0f1115;
+        --panel: rgba(20, 23, 30, 0.85);
+        --panel-border: rgba(255, 255, 255, 0.08);
+        --fg: #e6e6e6;
+        --muted: #9aa3b2;
+        --accent: #6be3a0;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background: var(--bg);
+        color: var(--fg);
+        font:
+          14px/1.4 ui-sans-serif,
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          Roboto,
+          sans-serif;
+        overflow: hidden;
+      }
+      #graph {
+        position: fixed;
+        inset: 0;
+      }
+      .panel {
+        position: fixed;
+        background: var(--panel);
+        border: 1px solid var(--panel-border);
+        border-radius: 8px;
+        padding: 10px 12px;
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        z-index: 2;
+      }
+      #header {
+        top: 12px;
+        left: 12px;
+        max-width: 360px;
+      }
+      #header h1 {
+        margin: 0 0 4px;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+      }
+      #header .stats {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 4px;
+      }
+      #header .dataset {
+        margin-top: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      #header .dataset label {
+        font-size: 11px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      #dataset-select {
+        flex: 1;
+        background: rgba(0, 0, 0, 0.25);
+        border: 1px solid var(--panel-border);
+        color: var(--fg);
+        padding: 3px 5px;
+        border-radius: 4px;
+        font: inherit;
+        font-size: 12px;
+      }
+      #search-input {
+        margin-top: 8px;
+        width: 100%;
+        background: rgba(0, 0, 0, 0.25);
+        border: 1px solid var(--panel-border);
+        color: var(--fg);
+        padding: 5px 7px;
+        border-radius: 4px;
+        font: inherit;
+        font-size: 12px;
+        box-sizing: border-box;
+      }
+      #search-results {
+        list-style: none;
+        margin: 6px 0 0;
+        padding: 0;
+        max-height: 240px;
+        overflow-y: auto;
+      }
+      #search-results li {
+        padding: 3px 5px;
+        cursor: pointer;
+        font-size: 11px;
+        border-radius: 3px;
+        word-break: break-all;
+        line-height: 1.3;
+      }
+      #search-results li:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+      #search-results li.empty {
+        color: var(--muted);
+        font-style: italic;
+        cursor: default;
+        background: transparent;
+      }
+      #search-results li .match {
+        background: rgba(107, 227, 160, 0.25);
+        color: var(--accent);
+        border-radius: 2px;
+      }
+      #header .toggle {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 8px;
+        font-size: 12px;
+        color: var(--muted);
+        cursor: pointer;
+        user-select: none;
+      }
+      #header .toggle input {
+        accent-color: var(--accent);
+      }
+      #legend {
+        top: 12px;
+        right: 12px;
+        max-height: calc(100vh - 24px);
+        overflow-y: auto;
+        min-width: 180px;
+      }
+      #legend h2 {
+        margin: 0 0 6px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+      }
+      #legend ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      #legend li {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 2px 0;
+        font-size: 12px;
+        color: var(--fg);
+      }
+      #legend .swatch {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15);
+      }
+      #legend .filter {
+        margin-bottom: 8px;
+        width: 100%;
+        background: rgba(0, 0, 0, 0.25);
+        border: 1px solid var(--panel-border);
+        color: var(--fg);
+        padding: 4px 6px;
+        border-radius: 4px;
+        font: inherit;
+      }
+      #tooltip {
+        position: fixed;
+        pointer-events: none;
+        background: var(--panel);
+        border: 1px solid var(--panel-border);
+        border-radius: 6px;
+        padding: 8px 10px;
+        font-size: 12px;
+        max-width: 320px;
+        z-index: 3;
+        display: none;
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+      }
+      #tooltip .path {
+        font-weight: 600;
+        word-break: break-all;
+        margin-bottom: 4px;
+      }
+      #tooltip .label {
+        color: var(--muted);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 6px 0 2px;
+      }
+      #tooltip .row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 1px 0;
+      }
+      #tooltip .swatch {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      #tooltip .count {
+        color: var(--muted);
+        margin-left: auto;
+      }
+      #error {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        padding: 16px 20px;
+        background: rgba(220, 60, 60, 0.15);
+        border: 1px solid rgba(220, 60, 60, 0.45);
+        border-radius: 8px;
+        color: #ffb6b6;
+        display: none;
+        max-width: 520px;
+      }
+      #error code {
+        background: rgba(0, 0, 0, 0.35);
+        padding: 1px 4px;
+        border-radius: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="graph"></div>
+
+    <div id="header" class="panel">
+      <h1>Markdown Knowledge Graph</h1>
+      <div class="dataset">
+        <label for="dataset-select">Repo</label>
+        <select id="dataset-select">
+          <option value="">Loading…</option>
+        </select>
+      </div>
+      <div class="stats" id="stats">Loading…</div>
+      <label class="toggle">
+        <input id="folders-toggle" type="checkbox" checked />
+        <span>Show folder groups</span>
+      </label>
+      <input id="search-input" type="search" placeholder="Search by path…" autocomplete="off" />
+      <ul id="search-results"></ul>
+    </div>
+
+    <div id="legend" class="panel" hidden>
+      <h2>Contributors</h2>
+      <input id="filter" class="filter" type="search" placeholder="Filter by contributor…" />
+      <ul id="legend-list"></ul>
+    </div>
+
+    <div id="tooltip"></div>
+    <div id="error"></div>
+
+    <script src="./vendor/force-graph.min.js"></script>
+    <script>
+      (async () => {
+        const errorEl = document.getElementById('error');
+        const showError = msg => {
+          errorEl.innerHTML = msg;
+          errorEl.style.display = 'block';
+        };
+
+        // Manifest is written by lib/runner.js into the served temp dir.
+        let manifest;
+        try {
+          const r = await fetch('./datasets.json', {cache: 'no-store'});
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          manifest = await r.json();
+        } catch (err) {
+          showError(`Failed to load <code>datasets.json</code>: ${err.message}.`);
+          return;
+        }
+        const datasets = manifest.datasets || [];
+        const KNOWN_DATASETS = new Set(datasets.map(d => d.name));
+
+        const select = document.getElementById('dataset-select');
+        select.replaceChildren(
+          ...datasets.map(d => {
+            const opt = document.createElement('option');
+            opt.value = d.name;
+            opt.textContent = d.label || d.name;
+            return opt;
+          }),
+        );
+        // Hide the dropdown row when there's only one dataset.
+        if (datasets.length < 2) {
+          document.querySelector('#header .dataset').hidden = true;
+        }
+
+        const params = new URLSearchParams(location.search);
+        const initial = params.get('dataset');
+        const dataset =
+          initial && KNOWN_DATASETS.has(initial) ? initial : datasets[0]?.name;
+        select.value = dataset;
+        select.addEventListener('change', () => {
+          const p = new URLSearchParams(location.search);
+          p.set('dataset', select.value);
+          location.search = p.toString();
+        });
+
+        const dataUrl = `./data/${dataset}.json`;
+        let data;
+        try {
+          const res = await fetch(dataUrl, {cache: 'no-store'});
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          data = await res.json();
+        } catch (err) {
+          showError(`Failed to load <code>${dataUrl}</code>: ${err.message}.`);
+          return;
+        }
+        if (typeof ForceGraph === 'undefined') {
+          showError('Failed to load <code>vendor/force-graph.min.js</code>.');
+          return;
+        }
+
+        const {nodes, links, meta = {}} = data;
+        document.getElementById('stats').textContent =
+          `${meta.nodeCount ?? nodes.length} files · ${meta.linkCount ?? links.length} links · ` +
+          `${meta.contributorCount ?? '?'} contributors`;
+
+        renderLegend(meta.palette || {});
+
+        const filterInput = document.getElementById('filter');
+        let highlightedName = null;
+        filterInput.addEventListener('input', () => {
+          highlightedName = filterInput.value.trim().toLowerCase() || null;
+          graph.nodeCanvasObject(drawNode);
+        });
+
+        const searchInput = document.getElementById('search-input');
+        const searchResults = document.getElementById('search-results');
+        let pathQuery = null;
+
+        function nodeMatchesPath(node) {
+          if (pathQuery === null) return true;
+          return (node.path || node.id).toLowerCase().includes(pathQuery);
+        }
+
+        function renderSearchResults() {
+          searchResults.innerHTML = '';
+          if (pathQuery === null) return;
+          const matches = nodes.filter(nodeMatchesPath).slice(0, 25);
+          if (matches.length === 0) {
+            const li = document.createElement('li');
+            li.className = 'empty';
+            li.textContent = 'no matches';
+            searchResults.appendChild(li);
+            return;
+          }
+          const q = pathQuery;
+          for (const node of matches) {
+            const li = document.createElement('li');
+            const p = node.path || node.id;
+            const i = p.toLowerCase().indexOf(q);
+            if (i >= 0) {
+              const before = document.createTextNode(p.slice(0, i));
+              const hit = document.createElement('span');
+              hit.className = 'match';
+              hit.textContent = p.slice(i, i + q.length);
+              const after = document.createTextNode(p.slice(i + q.length));
+              li.append(before, hit, after);
+            } else {
+              li.textContent = p;
+            }
+            li.title = p;
+            li.addEventListener('click', () => focusNode(node));
+            searchResults.appendChild(li);
+          }
+        }
+
+        function focusNode(node) {
+          const cx = node.x ?? 0;
+          const cy = node.y ?? 0;
+          graph.centerAt(cx, cy, 600);
+          graph.zoom(Math.max(graph.zoom(), 4), 600);
+        }
+
+        searchInput.addEventListener('input', () => {
+          pathQuery = searchInput.value.trim().toLowerCase() || null;
+          renderSearchResults();
+          graph.nodeCanvasObject(drawNode);
+        });
+
+        searchInput.addEventListener('keydown', e => {
+          if (e.key !== 'Enter' || pathQuery === null) return;
+          const top = nodes.find(nodeMatchesPath);
+          if (top) focusNode(top);
+        });
+
+        const tooltip = document.getElementById('tooltip');
+        document.addEventListener('mousemove', e => {
+          tooltip.style.left = e.clientX + 14 + 'px';
+          tooltip.style.top = e.clientY + 14 + 'px';
+        });
+
+        const graph = ForceGraph()(document.getElementById('graph'))
+          .graphData({nodes, links})
+          .backgroundColor('#0f1115')
+          .nodeId('id')
+          .nodeLabel(() => '') // suppress default tooltip; we render our own
+          .linkColor(() => 'rgba(140,150,170,0.25)')
+          .linkDirectionalArrowLength(3.5)
+          .linkDirectionalArrowRelPos(0.95)
+          .linkWidth(0.6)
+          .nodeCanvasObject(drawNode)
+          .nodePointerAreaPaint(paintPointer)
+          .onNodeHover(node => {
+            if (!node) {
+              tooltip.style.display = 'none';
+              document.body.style.cursor = '';
+              return;
+            }
+            tooltip.innerHTML = renderTooltip(node);
+            tooltip.style.display = 'block';
+            document.body.style.cursor = 'pointer';
+          })
+          .onNodeClick(node => {
+            const cx = node.x ?? 0;
+            const cy = node.y ?? 0;
+            graph.centerAt(cx, cy, 600);
+            graph.zoom(Math.max(graph.zoom(), 3), 600);
+          });
+
+        // Tweak forces — link distance / charge scaled up to match the
+        // 3× node radius so disks don't overlap.
+        graph.d3Force('charge').strength(-220);
+        graph.d3Force('link').distance(80);
+
+        // ---------- folder grouping ----------
+        // Two-tier folder treatment:
+        //   - Immediate parent (`js/packages/foo/llm-docs/`) drives a weak
+        //     centroid force so same-folder orphans cluster together
+        //     without overpowering the md-to-md link force.
+        //   - Top-level folder (`js/`, `docs/`, `dotnet/`, ...) drives the
+        //     translucent hull overlay so the eye sees codebase regions.
+        const folderOf = p => {
+          const i = p.lastIndexOf('/');
+          return i >= 0 ? p.slice(0, i) : '';
+        };
+        const topLevelOf = p => {
+          const i = p.indexOf('/');
+          return i >= 0 ? p.slice(0, i) : '(root)';
+        };
+
+        const parentGroups = new Map();
+        const topLevelGroups = new Map();
+        for (const node of nodes) {
+          const path = node.path || node.id;
+          const parent = folderOf(path);
+          if (!parentGroups.has(parent)) parentGroups.set(parent, []);
+          parentGroups.get(parent).push(node);
+          const top = topLevelOf(path);
+          if (!topLevelGroups.has(top)) topLevelGroups.set(top, []);
+          topLevelGroups.get(top).push(node);
+        }
+
+        const golden = 137.508;
+        const topFolders = [...topLevelGroups.keys()].sort();
+        const folderColors = {};
+        topFolders.forEach((f, i) => {
+          folderColors[f] = `hsl(${(i * golden) % 360}, 55%, 60%)`;
+        });
+
+        // Centroid attraction toward each node's immediate parent folder.
+        // Strength ~0.10 ⨯ alpha is roughly 3× weaker than the d3 link
+        // force (~1/min(deg) ≈ 0.3–0.5), so links still dominate clustering
+        // for connected nodes but same-folder siblings get a more visible
+        // pull than the previous 0.03 setting.
+        graph.d3Force('folder', alpha => {
+          for (const members of parentGroups.values()) {
+            if (members.length < 2) continue;
+            let cx = 0;
+            let cy = 0;
+            for (const n of members) {
+              cx += n.x || 0;
+              cy += n.y || 0;
+            }
+            cx /= members.length;
+            cy /= members.length;
+            const k = 0.1 * alpha;
+            for (const n of members) {
+              n.vx += (cx - (n.x || 0)) * k;
+              n.vy += (cy - (n.y || 0)) * k;
+            }
+          }
+        });
+
+        // Monotone-chain convex hull. O(N log N), fine to recompute every
+        // frame for ≤1100 nodes split across ~20 top-level folders.
+        function convexHull(points) {
+          const pts = [...points].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+          const n = pts.length;
+          if (n < 3) return pts;
+          const cross = (o, a, b) =>
+            (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+          const lower = [];
+          for (const p of pts) {
+            while (
+              lower.length >= 2 &&
+              cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0
+            )
+              lower.pop();
+            lower.push(p);
+          }
+          const upper = [];
+          for (let i = n - 1; i >= 0; i--) {
+            const p = pts[i];
+            while (
+              upper.length >= 2 &&
+              cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0
+            )
+              upper.pop();
+            upper.push(p);
+          }
+          lower.pop();
+          upper.pop();
+          return lower.concat(upper);
+        }
+
+        const foldersToggle = document.getElementById('folders-toggle');
+        let showFolders = foldersToggle.checked;
+        foldersToggle.addEventListener('change', () => {
+          showFolders = foldersToggle.checked;
+        });
+
+        graph.onRenderFramePre((ctx, globalScale) => {
+          if (!showFolders) return;
+          for (const [folder, members] of topLevelGroups) {
+            if (members.length < 3) continue;
+            const pts = members.map(n => [n.x || 0, n.y || 0]);
+            const hull = convexHull(pts);
+            if (hull.length < 3) continue;
+            // Push the hull outward by ~one node-radius worth of padding so
+            // nodes sit inside the region rather than on its edge.
+            const cx = hull.reduce((s, p) => s + p[0], 0) / hull.length;
+            const cy = hull.reduce((s, p) => s + p[1], 0) / hull.length;
+            const pad = 26 / globalScale; // pad in world coords
+            const padded = hull.map(([x, y]) => {
+              const dx = x - cx;
+              const dy = y - cy;
+              const d = Math.hypot(dx, dy) || 1;
+              return [x + (dx / d) * pad, y + (dy / d) * pad];
+            });
+            ctx.beginPath();
+            ctx.moveTo(padded[0][0], padded[0][1]);
+            for (let i = 1; i < padded.length; i++) ctx.lineTo(padded[i][0], padded[i][1]);
+            ctx.closePath();
+            ctx.fillStyle = folderColors[folder].replace(
+              /\)$/,
+              ', 0.10)',
+            ).replace('hsl(', 'hsla(');
+            ctx.fill();
+            ctx.strokeStyle = folderColors[folder].replace(
+              /\)$/,
+              ', 0.40)',
+            ).replace('hsl(', 'hsla(');
+            ctx.lineWidth = 1 / globalScale;
+            ctx.stroke();
+            // Label at the top of the hull
+            let topY = Infinity;
+            for (const [, y] of padded) topY = Math.min(topY, y);
+            const fontSize = Math.max(10, 13 / globalScale);
+            ctx.font = `600 ${fontSize}px ui-sans-serif, system-ui, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.fillStyle = folderColors[folder].replace(
+              /\)$/,
+              ', 0.85)',
+            ).replace('hsl(', 'hsla(');
+            ctx.fillText(folder + '/', cx, topY - 2);
+          }
+        });
+
+        // Resize handling
+        const resize = () => graph.width(window.innerWidth).height(window.innerHeight);
+        resize();
+        window.addEventListener('resize', resize);
+
+        // ---------- drawing helpers ----------
+        function nodeRadius(node) {
+          const total = (node.contributors || []).reduce((s, c) => s + c.commits, 0);
+          return 3 * Math.min(14, Math.max(3, Math.sqrt(total) + 1.5));
+        }
+
+        function drawNode(node, ctx, globalScale) {
+          const r = nodeRadius(node);
+          const x = node.x;
+          const y = node.y;
+          const contribs = node.contributors || [];
+          const total = contribs.reduce((s, c) => s + c.commits, 0);
+
+          const nameDimmed =
+            highlightedName !== null &&
+            !contribs.some(c => c.name.toLowerCase().includes(highlightedName));
+          const pathDimmed = !nodeMatchesPath(node);
+          ctx.globalAlpha = nameDimmed || pathDimmed ? 0.18 : 1;
+
+          if (total === 0) {
+            ctx.fillStyle = '#555';
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
+            let start = -Math.PI / 2;
+            for (const c of contribs) {
+              const slice = (c.commits / total) * Math.PI * 2;
+              ctx.beginPath();
+              ctx.moveTo(x, y);
+              ctx.arc(x, y, r, start, start + slice);
+              ctx.closePath();
+              ctx.fillStyle = c.color || '#888';
+              ctx.fill();
+              start += slice;
+            }
+          }
+          ctx.lineWidth = 0.5 / globalScale;
+          ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+          ctx.beginPath();
+          ctx.arc(x, y, r, 0, Math.PI * 2);
+          ctx.stroke();
+
+          if (globalScale >= 2.2 && !nameDimmed && !pathDimmed) {
+            const fontSize = Math.max(8, 11 / globalScale);
+            ctx.font = `${fontSize}px ui-sans-serif, system-ui, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillStyle = 'rgba(230,230,230,0.85)';
+            ctx.fillText(node.label, x, y + r + 2);
+          }
+          ctx.globalAlpha = 1;
+        }
+
+        function paintPointer(node, color, ctx) {
+          const r = nodeRadius(node) + 2;
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        function renderTooltip(node) {
+          const contribs = node.contributors || [];
+          const rows = contribs.length
+            ? contribs
+                .map(
+                  c =>
+                    `<div class="row">` +
+                    `<span class="swatch" style="background:${escapeHtml(c.color || '#888')}"></span>` +
+                    `<span>${escapeHtml(c.name)}</span>` +
+                    `<span class="count">${c.commits} commit${c.commits === 1 ? '' : 's'}</span>` +
+                    `</div>`,
+                )
+                .join('')
+            : '<div class="row" style="color:var(--muted)">No git history</div>';
+          return (
+            `<div class="path">${escapeHtml(node.path || node.id)}</div>` +
+            `<div class="label">Top contributors</div>` +
+            rows
+          );
+        }
+
+        function renderLegend(palette) {
+          const entries = Object.entries(palette).sort((a, b) => a[0].localeCompare(b[0]));
+          if (!entries.length) return;
+          const list = document.getElementById('legend-list');
+          list.innerHTML = entries
+            .map(
+              ([name, color]) =>
+                `<li><span class="swatch" style="background:${escapeHtml(color)}"></span><span>${escapeHtml(name)}</span></li>`,
+            )
+            .join('');
+          document.getElementById('legend').hidden = false;
+        }
+
+        function escapeHtml(s) {
+          return String(s).replace(/[&<>"']/g, c =>
+            ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'})[c],
+          );
+        }
+      })();
+    </script>
+  </body>
+</html>

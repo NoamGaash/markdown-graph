@@ -1,0 +1,45 @@
+{
+  "name": "markdown-graph",
+  "version": "0.1.0",
+  "description": "Interactive force-directed knowledge graph of a repo's Markdown corpus, colored by top contributors.",
+  "license": "MIT",
+  "author": "Noam Gaash",
+  "homepage": "https://github.com/NoamGaash/markdown-graph#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NoamGaash/markdown-graph.git"
+  },
+  "bugs": {
+    "url": "https://github.com/NoamGaash/markdown-graph/issues"
+  },
+  "bin": {
+    "markdown-graph": "bin/markdown-graph.js"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "web",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node bin/markdown-graph.js"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "force-graph": "^1.51.4",
+    "open": "^8.4.2",
+    "sirv": "^2.0.4"
+  },
+  "keywords": [
+    "markdown",
+    "knowledge-graph",
+    "force-graph",
+    "visualization",
+    "documentation",
+    "git"
+  ]
+}

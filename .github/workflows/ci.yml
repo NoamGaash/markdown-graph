@@ -1,0 +1,47 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+        with:
+          # Full history so the generator can compute accurate contributor
+          # counts when run against this repo as the smoke target.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4.4.0
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Build a static site against this repo
+        run: node bin/markdown-graph.js --build ./site --repos .
+
+      - name: Assert the build produced the expected layout
+        run: |
+          set -eu
+          test -f site/index.html
+          test -f site/vendor/force-graph.min.js
+          test -f site/datasets.json
+          test -f site/data/markdown-graph.json
+          node -e "
+            const d = JSON.parse(require('fs').readFileSync('site/data/markdown-graph.json','utf8'));
+            if (!Array.isArray(d.nodes) || d.nodes.length === 0) throw new Error('no nodes');
+            if (!d.meta || typeof d.meta.palette !== 'object') throw new Error('bad meta');
+            console.log('site OK:', d.nodes.length, 'nodes,', d.links.length, 'links');
+          "
+
+      - name: No CDN references leaked into served HTML
+        run: |
+          if grep -REn 'jsdelivr|unpkg.com|cdn\.' site/index.html; then
+            echo "::error::Found a CDN reference in the built site"
+            exit 1
+          fi

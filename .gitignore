@@ -1,0 +1,10 @@
+# Vendored at runtime by lib/runner.js from node_modules/force-graph
+web/vendor/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
