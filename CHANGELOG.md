@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/NoamGaash/markdown-graph/compare/v0.1.14...v0.2.0) (2026-06-01)
+
+
+### Features
+
+* **web:** configurable arrow size with bigger default ([#17](https://github.com/NoamGaash/markdown-graph/issues/17)) ([52fd54d](https://github.com/NoamGaash/markdown-graph/commit/52fd54da26075f2f83a9dcf7952e7152a5e08bd1))
+
 ## [0.1.14](https://github.com/NoamGaash/markdown-graph/compare/v0.1.13...v0.1.14) (2026-06-01)
 
 
