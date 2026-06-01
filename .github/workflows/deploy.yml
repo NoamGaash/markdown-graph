@@ -3,23 +3,20 @@ name: deploy
 on:
   push:
     branches: [main]
-  release:
-    types: [published]
   workflow_dispatch:
 
 concurrency:
   group: pages
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
-  # ── GitHub Pages ────────────────────────────────────────────────────────────
   pages:
-    if: github.event_name != 'release'
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -52,22 +49,3 @@ jobs:
 
       - id: deployment
         uses: actions/deploy-pages@v4.0.5
-
-  # ── npm publish (triggered by a GitHub Release created by Release Please) ──
-  npm:
-    if: github.event_name == 'release'
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-    steps:
-      - uses: actions/checkout@v4.2.2
-
-      - uses: actions/setup-node@v4.4.0
-        with:
-          node-version: '22'
-          cache: 'npm'
-          registry-url: 'https://registry.npmjs.org'
-
-      - run: npm ci
-
-      - run: npm publish --provenance --access public
