@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.12](https://github.com/NoamGaash/markdown-graph/compare/v0.1.11...v0.1.12) (2026-06-01)
+
+
+### Bug Fixes
+
+* manually exchange OIDC token for npm publish token ([85029e4](https://github.com/NoamGaash/markdown-graph/commit/85029e479adf643996a031f97f53fcb6b1c599f8))
+
 ## [0.1.11](https://github.com/NoamGaash/markdown-graph/compare/v0.1.10...v0.1.11) (2026-06-01)
 
 
