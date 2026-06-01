@@ -50,14 +50,15 @@ jobs:
 
       - run: npm ci
 
-      # setup-node exports NODE_AUTH_TOKEN (= GITHUB_TOKEN) into the env and
-      # writes a .npmrc referencing it. Both must be cleared before publish so
-      # npm falls through to the OIDC Trusted Publisher exchange (which it
-      # triggers automatically when ACTIONS_ID_TOKEN_REQUEST_URL is set and no
-      # other auth is present).
+      # setup-node exports NODE_AUTH_TOKEN (= GITHUB_TOKEN) and writes a
+      # .npmrc with _authToken=${NODE_AUTH_TOKEN}. Strip both so npm has
+      # the registry endpoint configured but no pre-set auth token —
+      # that causes it to fall through to the OIDC Trusted Publisher
+      # exchange (triggered automatically when ACTIONS_ID_TOKEN_REQUEST_URL
+      # is present and no other auth is configured).
       - name: Publish to npm via OIDC Trusted Publisher
         run: |
-          rm -f "${NPM_CONFIG_USERCONFIG}"
+          sed -i '/_authToken/d' "${NPM_CONFIG_USERCONFIG}"
           unset NODE_AUTH_TOKEN
           npm publish --provenance --access public
 
