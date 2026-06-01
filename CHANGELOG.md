@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.5](https://github.com/NoamGaash/markdown-graph/compare/v0.1.4...v0.1.5) (2026-06-01)
+
+
+### Bug Fixes
+
+* override NODE_AUTH_TOKEN to empty so npm uses OIDC Trusted Publisher ([3f1529e](https://github.com/NoamGaash/markdown-graph/commit/3f1529efc8398224d894d0417b2b5074aff844d0))
+
 ## [0.1.4](https://github.com/NoamGaash/markdown-graph/compare/v0.1.3...v0.1.4) (2026-06-01)
 
 
