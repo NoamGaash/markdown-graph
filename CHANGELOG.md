@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.14](https://github.com/NoamGaash/markdown-graph/compare/v0.1.13...v0.1.14) (2026-06-01)
+
+
+### Bug Fixes
+
+* upgrade npm to 11.5.1+ for Trusted Publisher OIDC support ([b862564](https://github.com/NoamGaash/markdown-graph/commit/b8625642ca42bf9a58cfa63bb1c71260fa74a58a))
+
 ## [0.1.13](https://github.com/NoamGaash/markdown-graph/compare/v0.1.12...v0.1.13) (2026-06-01)
 
 
