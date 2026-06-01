@@ -50,21 +50,21 @@ jobs:
 
       - run: npm ci
 
-      - name: Debug OIDC environment
-        run: |
-          echo "ACTIONS_ID_TOKEN_REQUEST_URL set: $([[ -n "${ACTIONS_ID_TOKEN_REQUEST_URL}" ]] && echo yes || echo NO)"
-          cat "${NPM_CONFIG_USERCONFIG}" | sed 's/=.*/=<redacted>/'
+      # Publish via OIDC Trusted Publisher.
+      # Key: do NOT pass registry-url to setup-node — that would cause
+      # setup-node to write a .npmrc and export NODE_AUTH_TOKEN (=GITHUB_TOKEN)
+      # via $GITHUB_ENV, which npm treats as pre-configured auth and skips the
+      # OIDC exchange even when ACTIONS_ID_TOKEN_REQUEST_URL is present.
+      # Instead, set the registry manually so there is no auth token at all.
+      - uses: actions/setup-node@v4.4.0
+        with:
+          node-version: '22'
 
-      # setup-node exports NODE_AUTH_TOKEN (= GITHUB_TOKEN) and writes a
-      # .npmrc with _authToken=${NODE_AUTH_TOKEN}. Strip both so npm has
-      # the registry endpoint configured but no pre-set auth token —
-      # that causes it to fall through to the OIDC Trusted Publisher
-      # exchange (triggered automatically when ACTIONS_ID_TOKEN_REQUEST_URL
-      # is present and no other auth is configured).
+      - run: npm ci
+
       - name: Publish to npm via OIDC Trusted Publisher
         run: |
-          sed -i '/_authToken/d' "${NPM_CONFIG_USERCONFIG}"
-          unset NODE_AUTH_TOKEN
+          npm config set registry https://registry.npmjs.org/
           npm publish --provenance --access public
 
   # ── GitHub Pages ────────────────────────────────────────────────────────────
