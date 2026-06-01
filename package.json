@@ -1,6 +1,6 @@
 {
   "name": "markdown-graph",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Interactive force-directed knowledge graph of a repo's Markdown corpus, colored by top contributors.",
   "license": "MIT",
   "author": "Noam Gaash",

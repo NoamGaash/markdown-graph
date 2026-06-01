@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.6](https://github.com/NoamGaash/markdown-graph/compare/v0.1.5...v0.1.6) (2026-06-01)
+
+
+### Bug Fixes
+
+* pass token: '' to setup-node so NODE_AUTH_TOKEN stays unset for OIDC ([6cfa40f](https://github.com/NoamGaash/markdown-graph/commit/6cfa40f09e273e7e7222ed42921dacf67f02f7ba))
+
 ## [0.1.5](https://github.com/NoamGaash/markdown-graph/compare/v0.1.4...v0.1.5) (2026-06-01)
 
 
