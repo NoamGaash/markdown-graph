@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.8](https://github.com/NoamGaash/markdown-graph/compare/v0.1.7...v0.1.8) (2026-06-01)
+
+
+### Bug Fixes
+
+* also unset NODE_AUTH_TOKEN before publish to allow OIDC ([2437656](https://github.com/NoamGaash/markdown-graph/commit/24376561ccc8ba107e0607129f4926f71d45dc11))
+
 ## [0.1.7](https://github.com/NoamGaash/markdown-graph/compare/v0.1.6...v0.1.7) (2026-06-01)
 
 
