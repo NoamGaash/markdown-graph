@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/NoamGaash/markdown-graph/compare/v0.1.2...v0.1.3) (2026-06-01)
+
+
+### Bug Fixes
+
+* consolidate into deploy.yml to match Trusted Publisher config ([ff1096d](https://github.com/NoamGaash/markdown-graph/commit/ff1096d4bc2ef94429fc787b620c047cc336b6b6))
+
 ## [0.1.2](https://github.com/NoamGaash/markdown-graph/compare/v0.1.1...v0.1.2) (2026-06-01)
 
 
