@@ -66,21 +66,28 @@ jobs:
         run: |
           npm config set registry https://registry.npmjs.org/
 
-          # Manually exchange the GitHub OIDC token for a short-lived npm
-          # publish token (this is what `npm publish` does internally, but
-          # only when there is no pre-configured auth in scope).
-          OIDC_TOKEN=$(curl -sf \
+          # Step 1: get a GitHub-signed OIDC token with audience=npm
+          OIDC_RESP=$(curl -s \
             -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
-            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=npm" \
-            | node -e "process.stdin.resume();let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>console.log(JSON.parse(d).value))")
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=npm")
+          OIDC_TOKEN=$(echo "$OIDC_RESP" | jq -r '.value // empty')
+          if [[ -z "$OIDC_TOKEN" ]]; then
+            echo "::error::Failed to get OIDC token. Response: ${OIDC_RESP}"
+            exit 1
+          fi
 
-          NPM_TOKEN=$(curl -sf \
-            -X POST \
+          # Step 2: exchange it for a short-lived npm publish token
+          GRANT_RESP=$(curl -s -X POST \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${OIDC_TOKEN}" \
-            "https://registry.npmjs.org/-/npm/v1/tokens/grantee" \
-            | node -e "process.stdin.resume();let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>console.log(JSON.parse(d).token))")
+            "https://registry.npmjs.org/-/npm/v1/tokens/grantee")
+          NPM_TOKEN=$(echo "$GRANT_RESP" | jq -r '.token // empty')
+          if [[ -z "$NPM_TOKEN" ]]; then
+            echo "::error::Trusted Publisher token exchange failed. Response: ${GRANT_RESP}"
+            exit 1
+          fi
 
+          # Step 3: publish with the short-lived token
           NODE_AUTH_TOKEN="${NPM_TOKEN}" npm publish --provenance --access public
 
   # ── GitHub Pages ────────────────────────────────────────────────────────────
