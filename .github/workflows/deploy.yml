@@ -42,22 +42,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4.2.2
 
+      # token: '' prevents setup-node from setting NODE_AUTH_TOKEN to the
+      # GITHUB_TOKEN. With NODE_AUTH_TOKEN unset, npm detects
+      # ACTIONS_ID_TOKEN_REQUEST_URL (set by id-token: write) and performs
+      # the OIDC Trusted Publisher exchange automatically.
       - uses: actions/setup-node@v4.4.0
         with:
           node-version: '22'
           cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
+          token: ''
 
       - run: npm ci
 
-      # setup-node sets NODE_AUTH_TOKEN to the GITHUB_TOKEN when registry-url
-      # is provided. Overriding with an empty string forces npm to fall through
-      # to the OIDC Trusted Publisher exchange (detected via
-      # ACTIONS_ID_TOKEN_REQUEST_URL, which GitHub sets automatically when
-      # id-token: write is granted).
       - run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ''
 
   # ── GitHub Pages ────────────────────────────────────────────────────────────
   # Builds the example site and deploys it to GitHub Pages on every push to main.
