@@ -46,11 +46,17 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-          registry-url: 'https://registry.npmjs.org'
 
       - run: npm ci
 
+      # registry-url is intentionally omitted from setup-node above.
+      # With registry-url, setup-node creates a .npmrc with NODE_AUTH_TOKEN
+      # which takes precedence over OIDC. Without it, npm detects the
+      # ACTIONS_ID_TOKEN_REQUEST_URL env var and uses the Trusted Publisher
+      # OIDC flow automatically.
       - run: npm publish --provenance --access public
+        env:
+          NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
 
   # ── GitHub Pages ────────────────────────────────────────────────────────────
   # Builds the example site and deploys it to GitHub Pages on every push to main.
