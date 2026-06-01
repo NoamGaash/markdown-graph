@@ -5,16 +5,55 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: write
+  pull-requests: write
+  pages: write
+  id-token: write
+
 concurrency:
   group: pages
   cancel-in-progress: true
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
 jobs:
+  # ── Release Please ──────────────────────────────────────────────────────────
+  # Opens/updates a versioned release PR on every push to main.
+  # When that PR is merged, creates the GitHub Release and sets release_created=true.
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.rp.outputs.release_created }}
+    steps:
+      - id: rp
+        uses: googleapis/release-please-action@v4
+        with:
+          release-type: node
+
+  # ── npm publish ─────────────────────────────────────────────────────────────
+  # Runs only when Release Please just created a new GitHub Release.
+  # Uses OIDC (Trusted Publisher) — no stored npm token needed.
+  npm-publish:
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - uses: actions/setup-node@v4.4.0
+        with:
+          node-version: '22'
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: npm ci
+
+      - run: npm publish --provenance --access public
+
+  # ── GitHub Pages ────────────────────────────────────────────────────────────
+  # Builds the example site and deploys it to GitHub Pages on every push to main.
   pages:
     runs-on: ubuntu-latest
     environment:
