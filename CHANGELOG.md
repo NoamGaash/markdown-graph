@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.13](https://github.com/NoamGaash/markdown-graph/compare/v0.1.12...v0.1.13) (2026-06-01)
+
+
+### Bug Fixes
+
+* use jq for OIDC token exchange and add error diagnostics ([04d3fbd](https://github.com/NoamGaash/markdown-graph/commit/04d3fbda188a89c26143b84cbeb602a7c0d7d23a))
+
 ## [0.1.12](https://github.com/NoamGaash/markdown-graph/compare/v0.1.11...v0.1.12) (2026-06-01)
 
 
