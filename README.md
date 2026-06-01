@@ -1,5 +1,8 @@
 # markdown-graph
 
+[![npm](https://img.shields.io/npm/v/markdown-graph)](https://www.npmjs.com/package/markdown-graph)
+[![license](https://img.shields.io/npm/l/markdown-graph)](LICENSE)
+
 Interactive force-directed knowledge graph of a repository's Markdown
 corpus. Every tracked `.md` file becomes a node, internal cross-references
 become edges, and each node renders as a **pie chart sliced by its top 3
