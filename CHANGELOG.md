@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/NoamGaash/markdown-graph/compare/v0.1.3...v0.1.4) (2026-06-01)
+
+
+### Bug Fixes
+
+* remove registry-url from setup-node to allow npm OIDC Trusted Publisher flow ([0e24338](https://github.com/NoamGaash/markdown-graph/commit/0e24338fff571f60b5c4a1b680a3226513cad21b))
+
 ## [0.1.3](https://github.com/NoamGaash/markdown-graph/compare/v0.1.2...v0.1.3) (2026-06-01)
 
 
