@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.10](https://github.com/NoamGaash/markdown-graph/compare/v0.1.9...v0.1.10) (2026-06-01)
+
+
+### Bug Fixes
+
+* verify OIDC Trusted Publisher auth in npm-publish job ([6b5867f](https://github.com/NoamGaash/markdown-graph/commit/6b5867f6eb64e7b147bc09a0203f3b5b65c21dac))
+
 ## [0.1.9](https://github.com/NoamGaash/markdown-graph/compare/v0.1.8...v0.1.9) (2026-06-01)
 
 
