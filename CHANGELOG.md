@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.11](https://github.com/NoamGaash/markdown-graph/compare/v0.1.10...v0.1.11) (2026-06-01)
+
+
+### Bug Fixes
+
+* set npm registry manually to avoid setup-node exporting NODE_AUTH_TOKEN ([0312e97](https://github.com/NoamGaash/markdown-graph/commit/0312e971e370393d3e10e1d69cc3bc8e1e467b46))
+
 ## [0.1.10](https://github.com/NoamGaash/markdown-graph/compare/v0.1.9...v0.1.10) (2026-06-01)
 
 
