@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.7](https://github.com/NoamGaash/markdown-graph/compare/v0.1.6...v0.1.7) (2026-06-01)
+
+
+### Bug Fixes
+
+* delete setup-node .npmrc before publish to allow OIDC Trusted Publisher ([21ecccb](https://github.com/NoamGaash/markdown-graph/commit/21ecccb625900bf26b423811d35018d6e936fb22))
+
 ## [0.1.6](https://github.com/NoamGaash/markdown-graph/compare/v0.1.5...v0.1.6) (2026-06-01)
 
 
