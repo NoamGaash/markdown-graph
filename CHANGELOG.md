@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.9](https://github.com/NoamGaash/markdown-graph/compare/v0.1.8...v0.1.9) (2026-06-01)
+
+
+### Bug Fixes
+
+* strip only _authToken from .npmrc, keep registry config for OIDC ([b742f94](https://github.com/NoamGaash/markdown-graph/commit/b742f94ec7ad6b2f3002672c585092d10339e3b3))
+
 ## [0.1.8](https://github.com/NoamGaash/markdown-graph/compare/v0.1.7...v0.1.8) (2026-06-01)
 
 
